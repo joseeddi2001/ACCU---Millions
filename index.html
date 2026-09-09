@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centre logistique — Les grands nombres</title>
+<style>
+:root{
+  --navy:#132b46;--navy2:#0a1c31;--paper:#f7f4ea;--cream:#eadfc9;
+  --cyan:#70c8ef;--blue:#2470b7;--green:#2ca667;--orange:#ed8d2f;
+  --red:#d84f55;--gold:#f3c44e;--ink:#13263b;--muted:#6a7b8d;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#091522;color:white}
+button,input{font:inherit}
+button{cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid white;outline-offset:3px}
+#app{max-width:1180px;margin:auto;padding:14px}
+.top{
+ display:flex;gap:12px;justify-content:space-between;align-items:center;
+ background:linear-gradient(180deg,#183c60,#0e263f);border:2px solid #315675;
+ border-radius:18px;padding:12px 16px;box-shadow:0 10px 30px rgba(0,0,0,.3)
+}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brandIcon{width:46px;height:46px;border-radius:12px;background:#d99643;display:grid;place-items:center;font-size:25px;box-shadow:inset 0 0 0 2px #ffd394}
+.brand h1{margin:0;font-size:clamp(18px,2.4vw,30px);letter-spacing:.02em}
+.brand small{color:#bad1e4}
+.topBtns{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{
+ border:2px solid #497394;background:#123655;color:white;border-radius:12px;min-height:44px;
+ padding:9px 13px;font-weight:800;transition:.16s ease
+}
+.btn:hover{transform:translateY(-1px);background:#184a73}
+.btn.primary{background:#2d9b61;border-color:#53c88a}
+.btn.orange{background:#c87625;border-color:#efa450}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.scene{
+ margin-top:12px;position:relative;overflow:hidden;border-radius:22px;
+ min-height:690px;background:#17293d url("assets/warehouse.webp") center top/cover no-repeat;
+ border:2px solid #3c5d76;box-shadow:0 14px 45px rgba(0,0,0,.38)
+}
+.scene:after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,rgba(5,16,29,.05),rgba(5,16,29,.1) 35%,rgba(7,14,22,.55) 100%);pointer-events:none}
+.screen{position:relative;z-index:5;padding:18px}
+.hidden{display:none!important}
+.panel{
+ background:rgba(246,242,229,.94);color:var(--ink);border:3px solid #d3c4a6;border-radius:16px;
+ box-shadow:0 8px 20px rgba(0,0,0,.18)
+}
+.metal{
+ background:linear-gradient(180deg,rgba(22,49,77,.97),rgba(10,28,48,.98));color:white;border:2px solid #426788;border-radius:15px;
+ box-shadow:inset 0 0 0 2px rgba(255,255,255,.04),0 8px 20px rgba(0,0,0,.24)
+}
+.start{
+ min-height:640px;display:grid;place-items:center;padding:30px;text-align:center
+}
+.startCard{width:min(720px,100%);padding:28px}
+.startCard h2{font-size:clamp(30px,5vw,54px);margin:0 0 8px}
+.startCard p{font-size:18px;color:#d1e1ed;margin:0 auto 20px;max-width:560px}
+.conveyorMini{height:74px;border:4px solid #2a3742;border-radius:13px;background:
+ repeating-linear-gradient(110deg,#374754 0 34px,#1e2a33 34px 45px);position:relative;overflow:hidden;margin:20px 0}
+.conveyorMini:before{content:"📦";position:absolute;font-size:44px;left:10%;top:6px;animation:miniParcel 3.6s ease-in-out infinite}
+@keyframes miniParcel{0%{left:2%}45%{left:46%}70%{left:46%}100%{left:89%}}
+.levelsTitle{margin:0 0 5px;font-size:clamp(25px,3.5vw,39px)}
+.levelIntro{margin:0 0 15px;color:#c6d9e6}
+.levelGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.levelCard{
+ text-align:left;padding:15px 13px;min-height:145px;border:2px solid #4f7694;border-radius:14px;
+ background:linear-gradient(180deg,rgba(20,57,88,.96),rgba(10,31,52,.97));color:white;transition:.18s ease
+}
+.levelCard:hover{transform:translateY(-2px);border-color:#91caed}
+.levelCard .n{font-size:12px;color:#a9d6ef;font-weight:900;text-transform:uppercase;letter-spacing:.1em}
+.levelCard .range{font-size:21px;font-weight:950;margin:6px 0}
+.levelCard .desc{font-size:12px;color:#c5d6e2;line-height:1.35}
+.stars{color:var(--gold);font-size:18px;letter-spacing:2px;margin-top:10px}
+.gameHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}
+.gameHeader h2{margin:0;font-size:clamp(23px,3vw,36px)}
+.gameHeader p{margin:3px 0 0;color:#d0e1ec}
+.hud{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.hudItem{padding:8px 11px;border-radius:10px;background:#132f4a;border:1px solid #4c718f;font-size:13px;white-space:nowrap}
+.progressTrack{height:11px;border-radius:999px;overflow:hidden;background:#183047;border:1px solid #54728c;margin:10px 0 13px}
+.progressFill{height:100%;width:0;background:linear-gradient(90deg,#57bf77,#e1bf48);transition:width .35s ease}
+.workspace{display:grid;grid-template-columns:220px minmax(0,1fr) 210px;gap:12px;align-items:start}
+.instructions{padding:14px}
+.instructions h3,.status h3{margin:0 0 10px;font-size:14px;text-transform:uppercase;letter-spacing:.11em;color:#e6b85a}
+.instructions ol{padding-left:22px;margin:0;color:#25384a;line-height:1.55;font-size:14px}
+.instructions .tip{margin-top:12px;padding:9px;border-radius:9px;background:#fff6d8;font-size:12px}
+.question{
+ min-height:312px;padding:18px;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;position:relative
+}
+.badge{background:#153c5d;border:2px solid #4d82a8;color:#e9f8ff;border-radius:999px;padding:6px 11px;font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.question h3{font-size:clamp(21px,3vw,31px);margin:11px 0 8px}
+.speaker{
+ width:104px;height:104px;border-radius:50%;border:4px solid #d5e9f7;background:linear-gradient(180deg,#257cc0,#18518a);
+ color:white;font-size:47px;display:grid;place-items:center;margin:4px auto 8px;box-shadow:0 9px 18px rgba(0,0,0,.2);transition:.18s
+}
+.speaker:hover{transform:scale(1.03)}
+.speaker.attention{animation:listenCue 1.2s ease-in-out infinite}
+.speaker.speaking{animation:speakerPulse .7s ease-in-out infinite alternate}
+@keyframes listenCue{
+  0%,100%{transform:scale(1);box-shadow:0 9px 18px rgba(0,0,0,.2)}
+  50%{transform:scale(1.06);box-shadow:0 0 0 10px rgba(51,151,214,.18),0 9px 18px rgba(0,0,0,.2)}
+}
+@keyframes speakerPulse{to{box-shadow:0 0 0 12px rgba(51,151,214,.19),0 9px 18px rgba(0,0,0,.18)}}
+.wave{height:28px;display:flex;align-items:center;gap:3px;margin:2px 0 10px}
+.wave i{display:block;width:4px;height:7px;background:#2d79b4;border-radius:4px}
+.wave.active i{animation:wave .7s ease-in-out infinite alternate}
+.wave i:nth-child(2){animation-delay:.08s}.wave i:nth-child(3){animation-delay:.16s}.wave i:nth-child(4){animation-delay:.24s}.wave i:nth-child(5){animation-delay:.32s}
+@keyframes wave{to{height:26px}}
+.writtenPrompt{font-size:clamp(25px,4vw,42px);font-weight:950;color:#173a58;margin:11px 0 12px;line-height:1.15}
+.answerRow{display:flex;gap:8px;width:min(500px,100%);margin:7px auto}
+.answerInput{
+ min-width:0;flex:1;border:3px solid #7f9db6;border-radius:12px;background:white;color:#14283d;min-height:52px;padding:8px 12px;
+ font-size:22px;font-weight:800;text-align:center
+}
+.keypad{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;width:min(460px,100%);margin:8px auto 0}
+.key{border:2px solid #456984;background:#173d5c;color:white;border-radius:10px;min-height:43px;font-size:17px;font-weight:900}
+.key:hover{background:#23577f}
+.feedback{min-height:28px;margin-top:9px;font-weight:900}
+.feedback.good{color:#14713f}.feedback.bad{color:#a43137}
+.hint{margin-top:8px;background:#fff1bf;border:2px solid #dfbf59;border-radius:10px;padding:8px 10px;color:#614b11;font-size:13px;width:100%}
+.status{padding:14px;color:#eaf4fb}
+.statusGrid{display:grid;gap:9px}
+.stat{display:flex;justify-content:space-between;gap:7px;border-bottom:1px solid rgba(255,255,255,.13);padding-bottom:7px;font-size:13px}
+.hearts{letter-spacing:3px;color:#ff757b}
+.combo{font-size:22px;font-weight:950;color:#ffd465;text-align:center;margin:12px 0 3px}
+.combo.hot{animation:comboPop .45s ease}
+@keyframes comboPop{50%{transform:scale(1.18);filter:brightness(1.4)}}
+.factory{
+ position:relative;z-index:4;height:310px;margin-top:13px;overflow:hidden;border-radius:17px;
+ border:3px solid #2c3c49;background:linear-gradient(180deg,rgba(12,27,40,.30),rgba(10,19,27,.70))
+}
+.conveyor{
+ position:absolute;left:0;right:0;top:47px;height:100px;border-top:7px solid #263540;border-bottom:7px solid #263540;
+ background:repeating-linear-gradient(108deg,#475863 0 49px,#24313a 49px 61px);
+ animation:beltMove 1.05s linear infinite
+}
+.conveyor:after{content:"";position:absolute;left:0;right:0;bottom:-27px;height:23px;background:
+ radial-gradient(circle at 13px 11px,#667682 0 8px,#222e36 9px 12px,transparent 13px) 0 0/58px 23px repeat-x}
+@keyframes beltMove{to{background-position:61px 0}}
+.scannerSprite{position:absolute;width:74px;height:144px;left:50%;top:2px;transform:translateX(-50%);object-fit:contain;filter:drop-shadow(0 7px 8px rgba(0,0,0,.28));z-index:7}
+.scanBeam{
+ position:absolute;left:50%;top:72px;width:140px;height:5px;transform:translateX(-50%);z-index:8;opacity:0;
+ background:linear-gradient(90deg,transparent,#ff4d43 23%,#ffd4cf 50%,#ff4d43 77%,transparent);box-shadow:0 0 20px #ff4d43
+}
+.scanBeam.active{animation:scan .55s ease 1}
+@keyframes scan{0%{opacity:0;transform:translate(-50%,-35px)}30%{opacity:1}70%{opacity:1}100%{opacity:0;transform:translate(-50%,35px)}}
+.parcel{
+ position:absolute;width:118px;height:102px;left:-130px;top:34px;z-index:6;object-fit:contain;
+ filter:drop-shadow(0 7px 6px rgba(0,0,0,.24));transition:none
+}
+.parcel.enter{animation:parcelIn 1.25s cubic-bezier(.18,.7,.2,1) forwards}
+@keyframes parcelIn{to{left:calc(50% - 59px)}}
+.parcel.shake{animation:parcelShake .38s linear}
+@keyframes parcelShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px) rotate(-3deg)}75%{transform:translateX(10px) rotate(3deg)}}
+.parcel.route1{animation:route1 1s ease-in forwards}.parcel.route2{animation:route2 1s ease-in forwards}.parcel.route3{animation:route3 1s ease-in forwards}.parcel.reject{animation:reject 1s ease-in forwards}
+@keyframes route1{to{left:10%;top:255px;transform:scale(.55) rotate(-12deg);opacity:.15}}
+@keyframes route2{to{left:calc(50% - 59px);top:255px;transform:scale(.55);opacity:.15}}
+@keyframes route3{to{left:83%;top:255px;transform:scale(.55) rotate(12deg);opacity:.15}}
+@keyframes reject{to{left:-140px;top:115px;transform:rotate(-20deg);opacity:.2}}
+.bins{position:absolute;left:5%;right:5%;bottom:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:13px;z-index:5}
+.bin{
+ height:110px;border-radius:12px 12px 4px 4px;border:5px solid rgba(0,0,0,.22);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ padding-top:9px;box-shadow:inset 0 -22px 0 rgba(0,0,0,.16),0 6px 10px rgba(0,0,0,.23);position:relative
+}
+.bin:after{content:"";position:absolute;left:17%;right:17%;top:50px;height:45px;background:rgba(0,0,0,.42);border-radius:5px}
+.bin b{z-index:2;background:#f4f0df;color:#17283a;padding:5px 8px;border-radius:6px;font-size:clamp(10px,1.3vw,14px)}
+.bin.green{background:#27a153}.bin.blue{background:#236cb7}.bin.orange{background:#d87627}
+.bin.glow{animation:binGlow .65s ease}
+@keyframes binGlow{50%{filter:brightness(1.65);transform:translateY(-4px)}}
+.toast{
+ position:absolute;z-index:20;left:50%;top:30px;transform:translateX(-50%) translateY(-20px);opacity:0;
+ border-radius:14px;padding:13px 20px;font-weight:950;font-size:19px;pointer-events:none
+}
+.toast.show{animation:toast .85s ease forwards}
+.toast.good{background:#dcf7e8;color:#12673b;border:3px solid #47b779}.toast.bad{background:#ffe3df;color:#9f2f34;border:3px solid #e46a6d}
+@keyframes toast{0%{opacity:0;transform:translateX(-50%) translateY(-18px)}20%,75%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-10px)}}
+.end{min-height:640px;display:grid;place-items:center;text-align:center;padding:30px}
+.endCard{width:min(650px,100%);padding:26px}
+.medal{font-size:74px}
+.endCard h2{font-size:42px;margin:0 0 6px}
+.endScore{font-size:38px;font-weight:950;color:#f4ce69;margin:10px 0}
+.resultStars{font-size:36px;letter-spacing:6px;color:#f2c54d}
+.actions{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.confetti{position:absolute;width:9px;height:13px;z-index:30;pointer-events:none;animation:confetti .9s ease-out forwards}
+@keyframes confetti{to{transform:translate(var(--x),var(--y)) rotate(440deg);opacity:0}}
+
+.voiceModal{
+ position:absolute;z-index:80;inset:0;background:rgba(4,13,23,.72);display:grid;place-items:center;
+ padding:18px;backdrop-filter:blur(5px)
+}
+.voiceCard{width:min(680px,100%);padding:20px;color:#13263b}
+.voiceHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.voiceHead h2{margin:0;font-size:28px}.voiceHead p{margin:4px 0 13px;color:#607589}
+.voiceClose{border:0;background:#e5edf3;color:#173a58;width:42px;height:42px;border-radius:50%;font-size:28px;cursor:pointer}
+.voiceModes{display:grid;gap:8px;margin:7px 0 15px}
+.voiceModes label{display:grid;grid-template-columns:22px auto;column-gap:8px;padding:10px;border:2px solid #d5e3ec;border-radius:11px;background:#f8fbfd}
+.voiceModes input{grid-row:1/3;width:18px;height:18px;margin-top:3px}
+.voiceModes b{font-size:15px}.voiceModes span{font-size:12px;color:#607589}
+.voiceSelectLabel{display:block;font-weight:850;margin-bottom:6px}
+.voiceSelect{width:100%;min-height:46px;border:2px solid #8faabe;border-radius:10px;background:white;padding:8px;color:#13263b;font-size:16px}
+.voiceTestBox{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:14px 0;padding:12px;border-radius:12px;background:#eaf6fc;border:2px solid #b9deef}
+.voiceTestBox div{display:grid}.voiceTestBox small{color:#638097}.voiceTestBox strong{font-size:25px}.voiceTestBox span{font-size:12px;color:#536b7c}
+.voiceStatus{min-height:27px;margin:7px 0 9px;font-weight:750;color:#35627c}
+.voiceStatus.good{color:#14713f}.voiceStatus.bad{color:#a43137}
+
+@media(max-width:930px){
+ .levelGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .workspace{grid-template-columns:1fr}.instructions,.status{display:none}
+ .question{min-height:330px}.factory{height:280px}
+}
+@media(max-width:560px){
+ #app{padding:6px}.top{align-items:flex-start}.topBtns{flex-direction:column}
+ .screen{padding:10px}.levelGrid{grid-template-columns:1fr}.answerRow{flex-direction:column}
+ .keypad{grid-template-columns:repeat(5,1fr)}.factory{height:270px}
+ .bins{left:2%;right:2%;gap:4px}.bin{height:102px;padding-top:7px}.parcel{width:92px;height:80px;top:44px}
+ .scannerSprite{width:62px}.gameHeader{flex-direction:column}.hud{justify-content:flex-start}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*:before,*:after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<main id="app">
+ <header class="top">
+   <div class="brand"><div class="brandIcon">📦</div><div><h1>Centre logistique — Les grands nombres</h1><small>Écoute • Écris • Trie</small></div></div>
+   <div class="topBtns">
+     <button class="btn" id="voiceSettingsBtn" type="button">🎙️ Voix</button>
+     <button class="btn" id="soundToggle" type="button">🔊 Son activé</button>
+     <button class="btn" id="levelsBtn" type="button">Niveaux</button>
+   </div>
+ </header>
+
+ <section class="scene" id="scene">
+  <div class="toast" id="toast"></div>
+
+  <section class="screen start metal" id="startView">
+    <div class="startCard">
+      <h2>Prends ton poste !</h2>
+      <p>Les colis arrivent avec un code annoncé en français. Écoute attentivement et écris le nombre en chiffres pour l’envoyer vers le bon bac.</p>
+      <div class="conveyorMini" aria-hidden="true"></div>
+      <button class="btn primary" id="startBtn" type="button">Démarrer l’usine</button>
+    </div>
+  </section>
+
+  <section class="screen hidden" id="levelsView">
+    <h2 class="levelsTitle">Choisis ton poste</h2>
+    <p class="levelIntro">10 colis par niveau. La majorité des codes sont annoncés uniquement à l’oral.</p>
+    <div class="levelGrid" id="levelGrid"></div>
+  </section>
+
+  <section class="screen hidden" id="gameView">
+    <div class="gameHeader">
+      <div><h2 id="levelTitle"></h2><p id="levelSubtitle"></p></div>
+      <div class="hud">
+        <div class="hudItem">Colis <b id="roundTxt">1/10</b></div>
+        <div class="hudItem">Score <b id="scoreTxt">0</b></div>
+        <div class="hudItem">Précision <b id="accuracyTxt">100%</b></div>
+      </div>
+    </div>
+    <div class="progressTrack"><div class="progressFill" id="progressFill"></div></div>
+
+    <div class="workspace">
+      <aside class="panel instructions">
+        <h3>Mode d’emploi</h3>
+        <ol>
+          <li>Écoute le code.</li><li>Écris-le en chiffres.</li><li>Valide.</li><li>Le colis est trié.</li>
+        </ol>
+        <div class="tip" id="ruleTip">Tu peux réécouter le nombre autant de fois que nécessaire.</div>
+      </aside>
+
+      <section class="panel question" id="questionPanel">
+        <span class="badge" id="modeBadge">Signal audio</span>
+        <h3 id="instructionTxt">Écoute bien le nombre !</h3>
+        <button class="speaker" id="speakBtn" type="button" aria-label="Écouter le nombre">🔊</button>
+        <div class="wave" id="wave"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="writtenPrompt hidden" id="writtenPrompt"></div>
+        <div class="answerRow">
+          <input class="answerInput" id="answerInput" inputmode="numeric" autocomplete="off" aria-label="Réponse en chiffres" placeholder="Écris le nombre ici…">
+          <button class="btn primary" id="validateBtn" type="button">Valider</button>
+        </div>
+        <div class="keypad" id="keypad"></div>
+        <div class="feedback" id="feedback" aria-live="polite"></div>
+        <div class="hint hidden" id="hintBox"></div>
+      </section>
+
+      <aside class="metal status">
+        <h3>Contrôle qualité</h3>
+        <div class="statusGrid">
+          <div class="stat"><span>Essais ce colis</span><b id="triesTxt">2</b></div>
+          <div class="stat"><span>Colis corrects</span><b id="correctTxt">0</b></div>
+          <div class="stat"><span>Erreurs</span><b id="wrongTxt">0</b></div>
+        </div>
+        <div class="combo" id="comboTxt">Série ×0</div>
+        <button class="btn" id="hintBtn" type="button" style="width:100%;margin-top:10px">💡 Indice</button>
+      </aside>
+    </div>
+
+    <section class="factory" id="factory">
+      <div class="conveyor"></div>
+      <img class="scannerSprite" src="assets/scanner.png" alt="" aria-hidden="true">
+      <div class="scanBeam" id="scanBeam"></div>
+      <img class="parcel" id="parcel" src="assets/parcel.png" alt="Colis sur le tapis roulant">
+      <div class="bins">
+        <div class="bin green" id="bin1"><b>1 000 – 99 999</b></div>
+        <div class="bin blue" id="bin2"><b>100 000 – 499 999</b></div>
+        <div class="bin orange" id="bin3"><b>500 000 – 999 999</b></div>
+      </div>
+    </section>
+  </section>
+
+  <section class="screen end hidden" id="endView">
+    <div class="endCard metal">
+      <div class="medal">🏆</div>
+      <h2>Poste terminé !</h2>
+      <p id="endText"></p>
+      <div class="endScore" id="endScore"></div>
+      <div class="resultStars" id="endStars"></div>
+      <div class="actions">
+        <button class="btn primary" id="replayBtn" type="button">Rejouer</button>
+        <button class="btn" id="chooseBtn" type="button">Changer de niveau</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="voiceModal hidden" id="voiceModal" role="dialog" aria-modal="true" aria-labelledby="voiceTitle">
+    <div class="voiceCard panel">
+      <div class="voiceHead">
+        <div>
+          <h2 id="voiceTitle">Réglages de la voix</h2>
+          <p>Choisis la voix utilisée pour annoncer les codes.</p>
+        </div>
+        <button class="voiceClose" id="voiceCloseBtn" type="button" aria-label="Fermer">×</button>
+      </div>
+
+      <div class="voiceModes">
+        <label><input type="radio" name="voiceMode" value="auto" checked> <b>Automatique</b><span>Voix du navigateur, puis voix intégrée si elle ne démarre pas.</span></label>
+        <label><input type="radio" name="voiceMode" value="system"> <b>Voix système</b><span>Utilise uniquement une voix française installée dans Chrome/Safari.</span></label>
+        <label><input type="radio" name="voiceMode" value="builtin"> <b>Voix intégrée</b><span>Audio fourni avec le jeu : identique sur tous les navigateurs.</span></label>
+      </div>
+
+      <label class="voiceSelectLabel" for="voiceSelect">Voix française du navigateur</label>
+      <select id="voiceSelect" class="voiceSelect">
+        <option value="">Chargement des voix…</option>
+      </select>
+
+      <div class="voiceTestBox">
+        <div>
+          <small>Test</small>
+          <strong>427 316</strong>
+          <span>« quatre cent vingt-sept mille trois cent seize »</span>
+        </div>
+        <button class="btn primary" id="voiceTestBtn" type="button">▶ Tester la voix</button>
+      </div>
+
+      <div class="voiceStatus" id="voiceStatus" aria-live="polite"></div>
+      <button class="btn primary" id="voiceSaveBtn" type="button" style="width:100%">Utiliser ces réglages</button>
+    </div>
+  </section>
+
+ </section>
+</main>
+
+<audio id="sfxStartup" src="assets/startup.wav" preload="auto"></audio>
+<audio id="sfxScan" src="assets/scanner.wav" preload="auto"></audio>
+<audio id="sfxCorrect" src="assets/correct.wav" preload="auto"></audio>
+<audio id="sfxError" src="assets/error.wav" preload="auto"></audio>
+<audio id="sfxCombo" src="assets/combo.wav" preload="auto"></audio>
+
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const views={start:$("startView"),levels:$("levelsView"),game:$("gameView"),end:$("endView")};
+let soundOn=true,currentLevel=null,round=0,score=0,streak=0,correctCount=0,wrongCount=0,totalAttempts=0,tries=2,current=null,locked=false;
+let levelUsedNumbers=new Set();
+let frenchVoice=null;
+let activeUtterance=null;
+let activeFallbackAudio=null;
+let speechRequestId=0;
+let voiceMode=localStorage.getItem("logisticsVoiceMode")||"auto";
+let preferredVoiceURI=localStorage.getItem("logisticsVoiceURI")||"";
+
+function frenchVoices(){
+ if(!("speechSynthesis" in window)) return [];
+ return speechSynthesis.getVoices().filter(v=>/^fr([_-]|$)/i.test(v.lang)||/french|français/i.test(v.name));
+}
+function voiceScore(v){
+ const name=(v.name||"").toLowerCase();
+ let s=0;
+ if(/google.*fran|google.*french/.test(name))s+=100;
+ if(/premium|enhanced|amélior|amelior/.test(name))s+=90;
+ if(/thomas|audrey|amélie|amelie|aurélie|aurelie/.test(name))s+=75;
+ if(v.localService===false)s+=18;
+ if(/^fr-FR$/i.test(v.lang))s+=15;
+ return s;
+}
+function loadFrenchVoice(){
+ const list=frenchVoices().sort((a,b)=>voiceScore(b)-voiceScore(a));
+ frenchVoice=list.find(v=>v.voiceURI===preferredVoiceURI)||list[0]||null;
+ renderVoiceList(list);
+ return frenchVoice;
+}
+function renderVoiceList(list=frenchVoices().sort((a,b)=>voiceScore(b)-voiceScore(a))){
+ const sel=$("voiceSelect");
+ if(!sel)return;
+ const current=preferredVoiceURI;
+ sel.innerHTML="";
+ if(!list.length){
+   const o=document.createElement("option");o.value="";o.textContent="Aucune voix française détectée";sel.appendChild(o);return;
+ }
+ list.forEach((v,i)=>{
+   const o=document.createElement("option");o.value=v.voiceURI;
+   o.textContent=`${v.name} — ${v.lang}${v.localService?" (locale)":""}`;
+   if((current&&v.voiceURI===current)||(!current&&i===0))o.selected=true;
+   sel.appendChild(o);
+ });
+}
+if("speechSynthesis" in window){
+ loadFrenchVoice();
+ speechSynthesis.addEventListener?.("voiceschanged",loadFrenchVoice);
+ if(!speechSynthesis.addEventListener)speechSynthesis.onvoiceschanged=loadFrenchVoice;
+ setTimeout(loadFrenchVoice,250);
+ setTimeout(loadFrenchVoice,1000);
+}
+
+function stopVoice(){
+ speechRequestId++;
+ try{speechSynthesis?.cancel()}catch(e){}
+ if(activeFallbackAudio){try{activeFallbackAudio.pause()}catch(e){} activeFallbackAudio=null;}
+ $("speakBtn")?.classList.remove("speaking");
+ $("wave")?.classList.remove("active");
+}
+
+function fallbackPath(n){return `assets/voice/n_${n}.mp3`;}
+function playFallbackNumber(n){
+ return new Promise((resolve,reject)=>{
+   if(activeFallbackAudio){try{activeFallbackAudio.pause()}catch(e){}}
+   const a=new Audio(fallbackPath(n));
+   activeFallbackAudio=a;
+   a.preload="auto";a.volume=1;
+   a.onplay=()=>{$("speakBtn")?.classList.add("speaking");$("wave")?.classList.add("active")};
+   a.onended=()=>{$("speakBtn")?.classList.remove("speaking");$("wave")?.classList.remove("active");activeFallbackAudio=null;resolve(true)};
+   a.onerror=()=>{$("speakBtn")?.classList.remove("speaking");$("wave")?.classList.remove("active");activeFallbackAudio=null;reject(new Error("fallback"))};
+   a.play().catch(reject);
+ });
+}
+
+function playSystemNumber(n, timeoutMs=1200){
+ return new Promise(async(resolve,reject)=>{
+   if(!("speechSynthesis" in window))return reject(new Error("unsupported"));
+   const requestId=++speechRequestId;
+   const synth=speechSynthesis;
+   try{synth.cancel();synth.resume()}catch(e){}
+   await new Promise(r=>setTimeout(r,100)); // avoids Chrome cancel/speak race
+
+   const utter=new SpeechSynthesisUtterance(toWords(n));
+   activeUtterance=utter;
+   utter.lang="fr-FR";utter.rate=.76;utter.pitch=1;utter.volume=1;
+   const v=loadFrenchVoice();if(v)utter.voice=v;
+
+   let started=false,done=false;
+   const timer=setTimeout(()=>{
+     if(!started&&!done&&requestId===speechRequestId){done=true;try{synth.cancel()}catch(e){};reject(new Error("start-timeout"))}
+   },timeoutMs);
+
+   utter.onstart=()=>{
+     if(requestId!==speechRequestId)return;
+     started=true;$("speakBtn")?.classList.add("speaking");$("wave")?.classList.add("active");
+     if(!done){done=true;clearTimeout(timer);resolve(true)}
+   };
+   utter.onend=()=>{$("speakBtn")?.classList.remove("speaking");$("wave")?.classList.remove("active")};
+   utter.onerror=()=>{
+     clearTimeout(timer);$("speakBtn")?.classList.remove("speaking");$("wave")?.classList.remove("active");
+     if(!done){done=true;reject(new Error("speech-error"))}
+   };
+   try{synth.speak(utter);setTimeout(()=>{if(synth.paused)try{synth.resume()}catch(e){}},80)}
+   catch(e){clearTimeout(timer);if(!done){done=true;reject(e)}}
+ });
+}
+
+async function speakSpecificNumber(n){
+ if(!soundOn){toast("Active d’abord le son en haut de l’écran.","bad");return false}
+ stopVoice();
+ if(voiceMode==="builtin"){
+   try{await playFallbackNumber(n);return true}catch(e){toast("Impossible de lire l’audio intégré.","bad");return false}
+ }
+ if(voiceMode==="system"){
+   try{await playSystemNumber(n,1800);return true}catch(e){toast("La voix système ne répond pas. Essaie le mode Automatique.","bad");return false}
+ }
+ try{
+   await playSystemNumber(n,950);
+   return true;
+ }catch(e){
+   try{
+     await playFallbackNumber(n);
+     $("voiceStatus").textContent="La voix système n’a pas démarré : utilisation automatique de la voix intégrée.";
+     return true;
+   }catch(e2){
+     toast("Aucune voix n’a pu être lancée.","bad");return false;
+   }
+ }
+}
+function speakNumber(){if(current&&typeof current.n==="number")speakSpecificNumber(current.n);}
+function toast(text,type){
+ const t=$("toast");t.textContent=text;t.className="toast "+type+" show";
+ setTimeout(()=>t.className="toast "+type,900);
+}
+function confetti(){
+ const colors=["#f4c44e","#42b873","#2c78bd","#ee8d2f","#f07373"];
+ for(let i=0;i<20;i++){
+   const c=document.createElement("span");c.className="confetti";
+   c.style.left=(45+Math.random()*10)+"%";c.style.top="48%";c.style.background=colors[i%colors.length];
+   c.style.setProperty("--x",(Math.random()*520-260)+"px");c.style.setProperty("--y",(Math.random()*-280-30)+"px");
+   $("scene").appendChild(c);setTimeout(()=>c.remove(),1000);
+ }
+}
+function renderLevels(){
+ const g=$("levelGrid");g.innerHTML="";
+ levels.forEach(l=>{
+   const stars=bestStars[l.id]||0,b=document.createElement("button");
+   b.type="button";b.className="levelCard";
+   b.innerHTML=`<div class="n">Poste ${l.id}</div><div class="range">${l.id===4?"ZÉROS":l.id===5?"MIXTE":fmt(l.range[0])+" – "+fmt(l.range[1])}</div><div class="desc">${l.desc}</div><div class="stars">${"★".repeat(stars)}${"☆".repeat(3-stars)}</div>`;
+   b.addEventListener("click",()=>startLevel(l));
+   g.appendChild(b);
+ });
+}
+function randomInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function genZeroNumber(level){
+ const candidates=[];
+ for(let i=0;i<80;i++){
+   let n=randomInt(level.range[0],level.range[1]);
+   let s=String(n);
+   if(s.includes("0") && !s.endsWith("000"))candidates.push(n);
+ }
+ if(candidates.length)return candidates[randomInt(0,candidates.length-1)];
+ return 205008;
+}
+function genNumber(){
+ const arr=QUESTION_BANK[String(currentLevel.id)] || [];
+ if(!arr.length) return randomInt(currentLevel.range[0],currentLevel.range[1]);
+ const available=arr.filter(n=>!levelUsedNumbers.has(n));
+ if(!available.length) levelUsedNumbers.clear();
+ const pool=available.length?available:arr;
+ const n=pool[Math.floor(Math.random()*pool.length)];
+ levelUsedNumbers.add(n);
+ return n;
+}
+function getMode(){
+ // Strong emphasis on listening: 85% audio, 15% written French -> digits.
+ return Math.random()<.85?"audio":"written";
+}
+function startLevel(level){
+ currentLevel=level;round=0;score=0;streak=0;correctCount=0;wrongCount=0;totalAttempts=0;levelUsedNumbers.clear();
+ $("levelTitle").textContent=level.title;$("levelSubtitle").textContent=level.desc;$("ruleTip").textContent=level.tip;
+ show("game");nextParcel();
+}
+function resetParcel(){
+ const p=$("parcel");p.className="parcel";void p.offsetWidth;p.classList.add("enter");
+}
+function nextParcel(){
+ if(round>=10){finish();return}
+ locked=false;tries=2;current={n:genNumber(),mode:getMode()};
+ $("answerInput").value="";$("feedback").textContent="";$("feedback").className="feedback";$("hintBox").classList.add("hidden");
+ $("triesTxt").textContent=tries;$("roundTxt").textContent=(round+1)+"/10";$("scoreTxt").textContent=score;$("correctTxt").textContent=correctCount;$("wrongTxt").textContent=wrongCount;
+ $("accuracyTxt").textContent=(totalAttempts?Math.round(correctCount/totalAttempts*100):100)+"%";$("progressFill").style.width=(round*10)+"%";
+ $("comboTxt").textContent="Série ×"+streak;$("comboTxt").classList.remove("hot");
+ $("writtenPrompt").classList.add("hidden");$("speakBtn").classList.remove("hidden");$("wave").classList.remove("hidden");
+ if(current.mode==="audio"){
+   $("modeBadge").textContent="Signal audio";
+   $("instructionTxt").textContent="Clique sur le haut-parleur, écoute, puis écris le nombre.";
+   $("speakBtn").classList.add("attention");
+ }else{
+   $("modeBadge").textContent="Lecture";$("instructionTxt").textContent="Écris ce nombre en chiffres.";
+   $("speakBtn").classList.remove("attention","speaking");
+   $("writtenPrompt").textContent=toWords(current.n);$("writtenPrompt").classList.remove("hidden");$("speakBtn").classList.add("hidden");$("wave").classList.add("hidden");
+ }
+ resetParcel();setTimeout(()=>$("answerInput").focus(),450);
+}
+function cleanDigits(v){return String(v||"").replace(/\D/g,"").slice(0,6)}
+function routeClass(n){return n<100000?"route1":n<500000?"route2":"route3"}
+function lightBin(n){
+ const id=n<100000?"bin1":n<500000?"bin2":"bin3",b=$(id);b.classList.add("glow");setTimeout(()=>b.classList.remove("glow"),800);
+}
+function scan(){
+ $("scanBeam").classList.remove("active");void $("scanBeam").offsetWidth;$("scanBeam").classList.add("active");playSfx("sfxScan")
+}
+function showHint(){
+ const n=current.n,k=Math.floor(n/1000),r=n%1000;
+ $("hintBox").innerHTML=`<b>Découpe autour de « mille » :</b><br>${fmt(n)} = <b>${fmt(k)} mille</b> + <b>${fmt(r)}</b>`;
+ $("hintBox").classList.remove("hidden");
+}
+function validate(){
+ if(locked)return;
+ const raw=cleanDigits($("answerInput").value);
+ if(!raw){$("feedback").textContent="Écris d’abord un nombre."; $("feedback").className="feedback bad";return}
+ const ans=Number(raw);totalAttempts++;
+ scan();
+ setTimeout(()=>{
+  if(ans===current.n){
+    locked=true;correctCount++;streak++;
+    const bonus=100+Math.min(streak,5)*15+(tries===2?30:0);score+=bonus;
+    $("feedback").textContent=`Bonne réponse ! +${bonus} points`;$("feedback").className="feedback good";
+    toast("Colis bien orienté !","good");playSfx("sfxCorrect");if(streak>=3){playSfx("sfxCombo");$("comboTxt").classList.add("hot")}
+    lightBin(current.n);const p=$("parcel");p.classList.remove("enter");p.classList.add(routeClass(current.n));confetti();
+    setTimeout(()=>{round++;nextParcel()},1250);
+  }else{
+    wrongCount++;streak=0;tries--;
+    $("wrongTxt").textContent=wrongCount;$("triesTxt").textContent=tries;$("comboTxt").textContent="Série ×0";
+    playSfx("sfxError");toast("Code incorrect.","bad");
+    const p=$("parcel");p.classList.add("shake");setTimeout(()=>p.classList.remove("shake"),420);
+    if(tries>0){
+      $("feedback").textContent="Ce n’est pas encore le bon code. Réécoute et réessaie.";$("feedback").className="feedback bad";showHint();
+      if(current.mode==="audio"){
+        $("speakBtn").classList.add("attention");
+        $("feedback").textContent="Ce n’est pas encore le bon code. Clique sur le haut-parleur pour réécouter.";
+      }
+    }else{
+      locked=true;
+      $("feedback").innerHTML=`Le bon code était <b>${fmt(current.n)}</b>.`;$("feedback").className="feedback bad";showHint();
+      p.classList.remove("enter");p.classList.add("reject");
+      setTimeout(()=>{round++;nextParcel()},1550);
+    }
+  }
+ },520);
+}
+function finish(){
+ $("progressFill").style.width="100%";show("end");
+ const accuracy=totalAttempts?Math.round(correctCount/totalAttempts*100):0;
+ let stars=1;if(correctCount>=8 && accuracy>=65)stars=2;if(correctCount>=9 && accuracy>=78)stars=3;
+ bestStars[currentLevel.id]=Math.max(bestStars[currentLevel.id]||0,stars);
+ $("endText").textContent=`${correctCount} colis sur 10 correctement traités. Précision : ${accuracy} %.`;
+ $("endScore").textContent=score+" points";$("endStars").textContent="★".repeat(stars)+"☆".repeat(3-stars);
+ confetti();playSfx("sfxCombo");
+}
+function buildKeypad(){
+ const k=$("keypad");k.innerHTML="";
+ [1,2,3,4,5,6,7,8,9,0,"⌫"].forEach(x=>{
+   const b=document.createElement("button");b.type="button";b.className="key";b.textContent=x;
+   b.addEventListener("click",()=>{const inp=$("answerInput");if(x==="⌫")inp.value=inp.value.slice(0,-1);else if(inp.value.replace(/\D/g,"").length<6)inp.value+=x;inp.focus()});
+   k.appendChild(b);
+ });
+}
+$("startBtn").addEventListener("click",()=>{playSfx("sfxStartup");renderLevels();show("levels")});
+$("levelsBtn").addEventListener("click",()=>{
+ if("speechSynthesis" in window){speechRequestId++;speechSynthesis.cancel()}
+ activeUtterance=null;renderLevels();show("levels")
+});
+$("speakBtn").addEventListener("click",()=>{
+ $("speakBtn").classList.remove("attention");
+ speakNumber();
+});
+$("validateBtn").addEventListener("click",validate);
+$("hintBtn").addEventListener("click",showHint);
+$("answerInput").addEventListener("input",e=>e.target.value=cleanDigits(e.target.value));
+$("answerInput").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();validate()}});
+$("replayBtn").addEventListener("click",()=>startLevel(currentLevel));
+$("chooseBtn").addEventListener("click",()=>{renderLevels();show("levels")});
+$("soundToggle").addEventListener("click",()=>{
+ soundOn=!soundOn;$("soundToggle").textContent=soundOn?"🔊 Son activé":"🔇 Son coupé";
+ if(!soundOn && "speechSynthesis" in window){
+   speechRequestId++;speechSynthesis.cancel();activeUtterance=null;
+   $("speakBtn").classList.remove("speaking");
+   $("wave").classList.remove("active");
+ }
+});
+
+function openVoiceSettings(){
+ renderVoiceList();
+ const selected=document.querySelector(`input[name="voiceMode"][value="${voiceMode}"]`);
+ if(selected)selected.checked=true;
+ $("voiceModal").classList.remove("hidden");
+ $("voiceStatus").textContent=voiceMode==="builtin"?"Voix intégrée sélectionnée.":"Teste une voix avant de commencer.";
+}
+function closeVoiceSettings(){stopVoice();$("voiceModal").classList.add("hidden")}
+$("voiceSettingsBtn").addEventListener("click",openVoiceSettings);
+$("voiceCloseBtn").addEventListener("click",closeVoiceSettings);
+$("voiceSaveBtn").addEventListener("click",()=>{
+ const checked=document.querySelector('input[name="voiceMode"]:checked');
+ voiceMode=checked?checked.value:"auto";
+ preferredVoiceURI=$("voiceSelect").value||preferredVoiceURI;
+ localStorage.setItem("logisticsVoiceMode",voiceMode);
+ localStorage.setItem("logisticsVoiceURI",preferredVoiceURI);
+ loadFrenchVoice();
+ $("voiceStatus").textContent="Réglages enregistrés.";
+ $("voiceStatus").className="voiceStatus good";
+ setTimeout(closeVoiceSettings,450);
+});
+$("voiceSelect").addEventListener("change",()=>{
+ preferredVoiceURI=$("voiceSelect").value;loadFrenchVoice();
+});
+$("voiceTestBtn").addEventListener("click",async()=>{
+ const checked=document.querySelector('input[name="voiceMode"]:checked');
+ const previousMode=voiceMode;
+ voiceMode=checked?checked.value:"auto";
+ preferredVoiceURI=$("voiceSelect").value||preferredVoiceURI;
+ loadFrenchVoice();
+ $("voiceStatus").textContent="Lecture du test…";$("voiceStatus").className="voiceStatus";
+ const ok=await speakSpecificNumber(427316);
+ $("voiceStatus").textContent=ok?"Si cette voix te convient, clique sur « Utiliser ces réglages ».":"Le test audio a échoué.";
+ $("voiceStatus").className="voiceStatus "+(ok?"good":"bad");
+ voiceMode=checked?checked.value:previousMode;
+});
+
+buildKeypad();renderLevels();
+})();
+</script>
+</body>
+</html>
